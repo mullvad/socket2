@@ -917,6 +917,9 @@ pub(crate) fn unix_sockaddr(path: &Path) -> io::Result<SockAddr> {
             .to_str()
             .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "path must be valid UTF-8"))?
             .as_bytes();
+        // SAFETY: Conversion from `&[u8]` into `[u8]`, which has the same alignment and size,
+        // and source data is known to be initialized
+        let bytes = unsafe { slice::from_raw_parts(bytes.as_ptr() as *const i8, bytes.len()) };
 
         // Windows appears to allow non-null-terminated paths, but this is
         // not documented, so do not rely on it yet.
